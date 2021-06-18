@@ -7,32 +7,22 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Arrays;
 import java.util.HashMap;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.swing.*;
 
-
+//URLs to remember for this project: 
+//https://openjdk.java.net/groups/net/httpclient/recipes.html
+//https://www.baeldung.com/jackson-deserialization
 public class myGui {
 	
-	public static String processString(String e) {
+	public static String processJson(String r) throws JsonMappingException, JsonProcessingException {
 		
-		String body = e;
+		object itemWithOwner = new ObjectMapper().readValue(r, object.class);
 		
-		body = body.replaceAll("[\r\n]+", "");
-		
-		String parts[] = body.split(" ");
-		
-		String newParts[] = new String[4];
-		int j = 0;
-		
-		for (int i = 0; i < parts.length; i++) {
-			if (!parts[i].contains("=>") && parts[i] != ""  && !parts[i].contains("Array(")) {
-				newParts[j] = parts[i];
-				newParts[j].trim();
-				j++;
-			}
-		}
-		return Arrays.toString(newParts);
+		return itemWithOwner.body;
 	}
 	
 	public static void main(String args[]) throws IOException, InterruptedException{
@@ -47,12 +37,24 @@ public class myGui {
 		
 		HttpClient client = HttpClient.newHttpClient();
 		HttpRequest request = HttpRequest.newBuilder().uri(URI.create("http://127.0.0.1/java-api-test/"))
+				.header("Accept", "application/json")
 				.POST(HttpRequest.BodyPublishers.ofString(requestBody))
 				.build();
 		
 		client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
 		.thenApply(HttpResponse::body)
-		.thenApply(myGui::processString)
+		.thenApply(t -> {
+			try {
+				return processJson(t);
+			} catch (JsonMappingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JsonProcessingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return t;
+		})
 		.thenAccept(System.out::println)
 		.join();
 	}

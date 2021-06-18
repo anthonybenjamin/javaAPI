@@ -1,0 +1,1 @@
+These files are used for internal testing of API. PHP function is to take hashmap and primary Java file as String or Json, convert it into a PHP object for processing on the server level, then convert a repeated response back into Json, returning it to initial program.
